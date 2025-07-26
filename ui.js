@@ -91,14 +91,14 @@ export function renderAssetManagerUI() {
         .asset-file-input {
             display: none;
         }
-        .sa-upload-btn, .sa-delete-btn {
+        .sa-upload-btn, .sa-delete-asset-btn {
             flex-shrink: 0;
             white-space: nowrap;
         }
-        .sa-delete-btn {
+        .sa-delete-asset-btn {
             background: var(--crimson70a);
         }
-        .sa-delete-btn:hover {
+        .sa-delete-asset-btn:hover {
             background: var(--crimson-hover);
         }
         .add-asset-section {
@@ -232,7 +232,7 @@ export function renderCustomAssetBlock(asset) {
                         <input type="text" class="asset-url-input" id="asset_url_${assetId}" placeholder="https://example.com/image.png or select a file to upload" value="${previewSrc}" />
                         <input type="file" accept="image/*" class="asset-file-input" id="asset_file_${assetId}" />
                         <button class="menu_button sa-upload-btn" data-target="asset_file_${assetId}">File</button>
-                        <button class="menu_button sa-delete-btn" data-asset-id="${assetId}">Delete</button>
+                        <button class="menu_button sa-delete-asset-btn" data-asset-id="${assetId}">Delete</button>
                     </div>
                 </div>
             </div>
@@ -260,7 +260,7 @@ export function renderNewCustomAssetBlock(assetId) {
                         <input type="text" class="asset-url-input" id="asset_url_${assetId}" placeholder="https://example.com/image.png" value="" />
                         <input type="file" accept="image/*" class="asset-file-input" id="asset_file_${assetId}" />
                         <button class="menu_button sa-upload-btn" data-target="asset_file_${assetId}">File</button>
-                        <button class="menu_button sa-delete-btn" data-asset-id="${assetId}">Delete</button>
+                        <button class="menu_button sa-delete-asset-btn" data-asset-id="${assetId}">Delete</button>
                     </div>
                 </div>
             </div>
