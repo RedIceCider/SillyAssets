@@ -53,13 +53,23 @@ export function registerSlashCommands() {
                         return '';
                     }
                     toastr.info(`SillyAssets: Current temporary avatar: ${existing}`);
-                    return '';
+                    const existingStr = existing.toString();
+                    if (existingStr.startsWith('data:')) {
+                        return existingStr;
+                    }
+                    // @ts-ignore
+                    return SillyTavern.getContext().substituteParams(existingStr);
                 }
 
                 console.log('SillyAssets: /chat-avatar applying new temporary avatar.');
-                applyChatAvatar(String(arg));
+                const rawUrl = String(arg);
+                applyChatAvatar(rawUrl);
                 toastr.success('SillyAssets: Temporary chat avatar applied.');
-                return '';
+                if (rawUrl.startsWith('data:')) {
+                    return rawUrl;
+                }
+                // @ts-ignore
+                return SillyTavern.getContext().substituteParams(rawUrl);
             } catch (error) {
                 toastr.error('SillyAssets: An unexpected error occurred.');
                 console.error('SillyAssets: /chat-avatar unexpected error:', error);

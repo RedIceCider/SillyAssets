@@ -1,8 +1,20 @@
 import { event_types, eventSource } from '../../../../script.js';
 import { getLocalVariable, setLocalVariable } from '../../../variables.js';
 
+function getParsedAvatarUrl() {
+    const rawUrl = getLocalVariable('sma-avatar');
+    if (!rawUrl) return null;
+    const urlString = rawUrl.toString();
+    // If it's a data URL, it's likely a base64 image and shouldn't contain macros.
+    if (urlString.startsWith('data:')) {
+        return urlString;
+    }
+    // @ts-ignore
+    return SillyTavern.getContext().substituteParams(urlString);
+}
+
 function updateChatAvatars(messageId = null) {
-    const src = getLocalVariable('sma-avatar');
+    const src = getParsedAvatarUrl();
     if (!src) return;
 
     if (messageId !== null && messageId !== undefined) {
@@ -25,7 +37,7 @@ function updateChatAvatars(messageId = null) {
 const updateAvatars = (messageId) => updateChatAvatars(messageId);
 
 function updateLastChatAvatar() {
-    const src = getLocalVariable('sma-avatar');
+    const src = getParsedAvatarUrl();
     if (!src) return;
 
     const avatars = document.querySelectorAll('.mes:not([is_user="true"]):not([is_system="true"]) .avatar img');
@@ -53,7 +65,7 @@ function handleStreamTokenReceived() {
 }
 
 function restoreAvatarListener() {
-    const src = getLocalVariable('sma-avatar');
+    const src = getParsedAvatarUrl();
     if (src) {
         console.log('SillyAssets: Chat avatar found, restoring listener.');
         eventSource.removeListener(event_types.CHARACTER_MESSAGE_RENDERED, updateAvatars);
@@ -79,7 +91,7 @@ function fixZoomedAvatar() {
                     const imgElement = node.querySelector('.zoomed_avatar_img');
                     if (!imgElement || !(imgElement instanceof HTMLImageElement)) return;
 
-                    const customAvatarUrl = getLocalVariable('sma-avatar');
+                    const customAvatarUrl = getParsedAvatarUrl();
                     if (!customAvatarUrl) return;
 
                     const src = imgElement.getAttribute('src');
