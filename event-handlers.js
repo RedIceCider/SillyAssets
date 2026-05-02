@@ -74,7 +74,17 @@ export function setupAssetManagerEventHandlers() {
             const url = target.value ? target.value.trim() : '';
             if (preview) {
                 if (url) {
-                    preview.innerHTML = `<img src="${url}" alt="Asset preview" onerror="this.parentElement.innerHTML='Preview<br>Error'">`;
+                    let parsedUrl = url;
+                    // Parse macros if not a data URL
+                    if (!url.startsWith('data:')) {
+                        try {
+                            // @ts-ignore
+                            parsedUrl = SillyTavern.getContext().substituteParams(url);
+                        } catch (e) {
+                            console.error('SillyAssets: Error parsing macros for preview', e);
+                        }
+                    }
+                    preview.innerHTML = `<img src="${parsedUrl}" alt="Asset preview" onerror="this.parentElement.innerHTML='Preview<br>Error'">`;
                 } else {
                     preview.innerHTML = 'Preview<br>of<br>Asset';
                 }

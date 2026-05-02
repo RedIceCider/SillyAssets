@@ -181,6 +181,21 @@ export function renderAssetManagerUI() {
 }
 
 /**
+ * Parses macros in a URL for preview purposes
+ * @param {string} url - The raw URL
+ * @returns {string} The parsed URL
+ */
+function parsePreviewUrl(url) {
+    if (!url || url.startsWith('data:')) return url;
+    try {
+        // @ts-ignore
+        return SillyTavern.getContext().substituteParams(url);
+    } catch (e) {
+        return url;
+    }
+}
+
+/**
  * Renders a greeting asset block
  * @param {number} index - The greeting index
  * @param {string} greetingText - The greeting text
@@ -189,7 +204,8 @@ export function renderAssetManagerUI() {
  */
 export function renderGreetingAssetBlock(index, greetingText, asset) {
     const assetName = index === 0 ? "Default Greeting" : `Alt Greeting ${index}`;
-    const previewSrc = asset?.uri || "";
+    const rawSrc = asset?.uri || "";
+    const previewSrc = parsePreviewUrl(rawSrc);
     const previewStyle = getPreviewStyle();
     
     return `
@@ -201,7 +217,7 @@ export function renderGreetingAssetBlock(index, greetingText, asset) {
                 <div class="asset-name">${assetName}</div>
                 <textarea class="greeting-preview" title="Greeting text preview" readonly rows="3">${(greetingText || 'No greeting text').trim()}</textarea>
                 <div class="asset-inputs">
-                    <input type="text" class="asset-url-input" id="asset_url_${index}" placeholder="https://example.com/image.png" value="${previewSrc}" />
+                    <input type="text" class="asset-url-input" id="asset_url_${index}" placeholder="https://example.com/image.png" value="${rawSrc}" />
                     <input type="file" accept="image/*" class="asset-file-input" id="asset_file_${index}" />
                     <button class="menu_button sa-upload-btn" data-target="asset_file_${index}">File</button>
                 </div>
@@ -215,7 +231,8 @@ export function renderGreetingAssetBlock(index, greetingText, asset) {
  * @returns {string} HTML string for the custom asset block
  */
 export function renderCustomAssetBlock(asset) {
-    const previewSrc = asset.uri || "";
+    const rawSrc = asset.uri || "";
+    const previewSrc = parsePreviewUrl(rawSrc);
     const assetId = `custom_${asset.name}`;
     const previewStyle = getPreviewStyle();
     
@@ -229,7 +246,7 @@ export function renderCustomAssetBlock(asset) {
                 <div class="custom-asset-inputs">
                     <input type="text" class="custom-asset-name-input" id="name_${assetId}" placeholder="Asset Name" value="${asset.name}" />
                     <div class="asset-inputs">
-                        <input type="text" class="asset-url-input" id="asset_url_${assetId}" placeholder="https://example.com/image.png or select a file to upload" value="${previewSrc}" />
+                        <input type="text" class="asset-url-input" id="asset_url_${assetId}" placeholder="https://example.com/image.png or select a file to upload" value="${rawSrc}" />
                         <input type="file" accept="image/*" class="asset-file-input" id="asset_file_${assetId}" />
                         <button class="menu_button sa-upload-btn" data-target="asset_file_${assetId}">File</button>
                         <button class="menu_button sa-delete-asset-btn" data-asset-id="${assetId}">Delete</button>
