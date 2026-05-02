@@ -1,16 +1,20 @@
 // Asset Manager functionality for SillyAssets Extension
 
-import { writeExtensionField } from "../../../extensions.js";
-import { event_types, eventSource } from "../../../../script.js";
 import { applyChatAvatar } from "./chat_avatar.js";
+
+/**
+ * Get the SillyTavern context.
+ * @returns {any}
+ */
+const getContext = () => SillyTavern.getContext();
 
 /**
  * Saves all assets from the current popup
  */
 export async function saveAllAssets() {
     try {
-        const ctx = SillyTavern.getContext();
-        const { characterId, characters } = ctx;
+        const ctx = getContext();
+        const { characterId, characters, writeExtensionField } = ctx;
         const char = characters[characterId];
         const altGreetings = char.data.alternate_greetings || [];
 
@@ -57,7 +61,7 @@ export async function saveAllAssets() {
         });
 
         // Write all assets at once
-        writeExtensionField(characterId, "silly_assets", { asset: allAssets });
+        await writeExtensionField(characterId, "silly_assets", { asset: allAssets });
 
         toastr.success(
             `SillyAssets: Saved ${allAssets.length} assets successfully.`,
@@ -84,8 +88,8 @@ export async function saveAllAssets() {
  */
 export function saveGreetingAsset(index, uri, ext = "png") {
     try {
-        const ctx = SillyTavern.getContext();
-        const { characterId, characters } = ctx;
+        const ctx = getContext();
+        const { characterId, characters, writeExtensionField } = ctx;
         const char = characters[characterId];
 
         const asset = {
@@ -115,7 +119,7 @@ export function saveGreetingAsset(index, uri, ext = "png") {
  * @param {number} index - The greeting index
  */
 export function applyGreetingAvatar(index) {
-    const ctx = SillyTavern.getContext();
+    const ctx = getContext();
     const { characterId, characters } = ctx;
     const assets =
         characters[characterId].data.extensions?.silly_assets?.asset || [];
@@ -133,7 +137,7 @@ export function applyGreetingAvatar(index) {
  * @returns {number|null} The current greeting index or null
  */
 export function getCurrentGreetingIndex() {
-    const ctx = SillyTavern.getContext();
+    const ctx = getContext();
     if (ctx.chat.length === 0) return null;
 
     const firstMessage = ctx.chat[0];
@@ -186,7 +190,8 @@ let maybeAutoApplyGreetingAvatarHandler = null;
  * Automatically applies greeting avatar when appropriate
  */
 export function maybeAutoApplyGreetingAvatar() {
-    const ctx = SillyTavern.getContext();
+    const ctx = getContext();
+    const { eventSource, event_types } = ctx;
     if (ctx.chat.length !== 1) return;
 
     const assets =
@@ -207,7 +212,7 @@ export function maybeAutoApplyGreetingAvatar() {
     }
 
     maybeAutoApplyGreetingAvatarHandler = () => {
-        const freshCtx = SillyTavern.getContext();
+        const freshCtx = getContext();
         const swipeId = freshCtx.chat[0]?.swipe_id ?? 0;
         const asset = assets.find(
             (a) => a.name === String(swipeId) && a.type === "alt-greeting",

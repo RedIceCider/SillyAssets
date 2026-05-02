@@ -1,5 +1,10 @@
-import { event_types, eventSource } from '../../../../script.js';
 import { getLocalVariable, setLocalVariable } from '../../../variables.js';
+
+/**
+ * Get the SillyTavern context.
+ * @returns {any}
+ */
+const getContext = () => SillyTavern.getContext();
 
 function getParsedAvatarUrl() {
     const rawUrl = getLocalVariable('sma-avatar');
@@ -10,7 +15,7 @@ function getParsedAvatarUrl() {
         return urlString;
     }
     // @ts-ignore
-    return SillyTavern.getContext().substituteParams(urlString);
+    return getContext().substituteParams(urlString);
 }
 
 function updateChatAvatars(messageId = null) {
@@ -59,14 +64,15 @@ function handleStreamTokenReceived() {
     // Set up a one-time listener to re-enable updates after the next message is rendered
     const resetListener = () => {
         allowStreamAvatarUpdate = true;
-        eventSource.removeListener(event_types.CHARACTER_MESSAGE_RENDERED, resetListener);
+        getContext().eventSource.removeListener(getContext().event_types.CHARACTER_MESSAGE_RENDERED, resetListener);
     };
-    eventSource.on(event_types.CHARACTER_MESSAGE_RENDERED, resetListener);
+    getContext().eventSource.on(getContext().event_types.CHARACTER_MESSAGE_RENDERED, resetListener);
 }
 
 function restoreAvatarListener() {
     const src = getParsedAvatarUrl();
     if (src) {
+        const { eventSource, event_types } = getContext();
         console.log('SillyAssets: Chat avatar found, restoring listener.');
         eventSource.removeListener(event_types.CHARACTER_MESSAGE_RENDERED, updateAvatars);
         eventSource.removeListener(event_types.STREAM_TOKEN_RECEIVED, handleStreamTokenReceived);
@@ -116,6 +122,7 @@ function fixZoomedAvatar() {
  */
 export function applyChatAvatar(url) {
     if (!url) return;
+    const { eventSource, event_types } = getContext();
     console.log('SillyAssets: Applying new chat avatar.');
     setLocalVariable('sma-avatar', url);
     updateChatAvatars();
@@ -126,6 +133,7 @@ export function applyChatAvatar(url) {
 }
 
 export function initChatAvatar() {
+    const { eventSource, event_types } = getContext();
     restoreAvatarListener();
     eventSource.on(event_types.CHAT_CHANGED, restoreAvatarListener);
     fixZoomedAvatar();

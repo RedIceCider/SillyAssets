@@ -1,5 +1,3 @@
-import { callGenericPopup, POPUP_TYPE } from '../../../popup.js';
-import { event_types, eventSource } from '../../../../script.js';
 import { initChatAvatar } from './chat_avatar.js';
 
 // Import UI components
@@ -16,9 +14,16 @@ import { registerSlashCommands } from './slash-commands.js';
 import { initializeSillyAssetsMacros } from './assets_macro.js';
 
 /**
+ * Get the SillyTavern context.
+ * @returns {any}
+ */
+const getContext = () => SillyTavern.getContext();
+
+/**
  * Shows the asset manager popup
  */
 async function showAssetManagerPopup() {
+    const { callGenericPopup, POPUP_TYPE } = getContext();
     const html = renderAssetManagerUI();
 
     await callGenericPopup(html, POPUP_TYPE.TEXT, 'Manage Assets', {
@@ -45,6 +50,8 @@ async function showAssetManagerPopup() {
  * Initializes the SillyAssets extension UI
  */
 function initSillyAssets() {
+    if ($('#silly_assets_extension').length) return;
+
     $('#extensionsMenu').append(`
         <div id="silly_assets_extension" class="list-group-item flex-container flexGap5" title="Silly Assets menu">
             <div class="fa-solid fa-image extensionsMenuExtensionButton"></div>
@@ -63,9 +70,9 @@ function startSillyAssets() {
     registerSlashCommands();
     maybeAutoApplyGreetingAvatar();
     initializeSillyAssetsMacros();
-    eventSource.on(event_types.CHAT_CHANGED, maybeAutoApplyGreetingAvatar);
+    getContext().eventSource.on(getContext().event_types.CHAT_CHANGED, maybeAutoApplyGreetingAvatar);
     console.log('SillyAssets: Ready.');
 }
 
-// Start the extension when the app is ready
-eventSource.on(event_types.APP_READY, startSillyAssets);
+const { eventSource, event_types } = getContext();
+eventSource.on(event_types.APP_INITIALIZED, startSillyAssets);
