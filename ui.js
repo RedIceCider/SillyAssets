@@ -216,6 +216,7 @@ export function renderGreetingAssetBlock(index, greetingText, asset) {
                     <input type="text" class="sa-url-input" id="sa-url-${index}" placeholder="https://example.com/image.png" value="${rawSrc}" />
                     <input type="file" accept="image/*" class="sa-file-input" id="sa-file-${index}" />
                     <button class="menu_button sa-btn sa-upload-btn" data-target="sa-file-${index}">File</button>
+                    <button class="menu_button sa-btn sa-btn--delete sa-clear-greeting-btn" data-index="${index}">Clear</button>
                 </div>
             </div>
         </div>`;

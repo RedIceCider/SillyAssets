@@ -32,6 +32,15 @@ export function setupAssetManagerEventHandlers() {
             if (assetBlock) assetBlock.remove();
         }
 
+        // Clear greeting asset buttons
+        if (target.classList.contains('sa-clear-greeting-btn')) {
+            const index = target.dataset.index;
+            const urlInput = document.getElementById(`sa-url-${index}`);
+            const preview = document.getElementById(`sa-preview-${index}`);
+            if (urlInput instanceof HTMLInputElement) urlInput.value = '';
+            if (preview) preview.innerHTML = 'Preview';
+        }
+
         // Add custom asset button
         if (target.id === 'sa-add-custom') {
             console.log('SillyAssets: Add custom asset button clicked');
