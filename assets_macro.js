@@ -15,7 +15,7 @@ const getContext = () => SillyTavern.getContext();
  * @param {string} text - The text containing macros
  * @returns {string} The text with resolved asset URIs
  */
-function resolveSillyAssetMacros(text) {
+export function resolveSillyAssetMacros(text) {
     if (!text || typeof text !== 'string') return text;
     
     const ctx = getContext();

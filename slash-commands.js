@@ -5,7 +5,7 @@ import { ARGUMENT_TYPE, SlashCommandArgument } from '../../../slash-commands/Sla
 import { SlashCommandParser } from '../../../slash-commands/SlashCommandParser.js';
 import { saveGreetingAsset, getExtensionFromURI } from './asset-manager.js';
 import { getLocalVariable } from '../../../variables.js';
-import { applyChatAvatar } from './chat_avatar.js';
+import { applyChatAvatar, applyUserAvatar } from './chat_avatar.js';
 
 /**
  * Get the SillyTavern context.
@@ -100,6 +100,65 @@ export function registerSlashCommands() {
             <ul>
                 <li>
                     <pre><code class="language-stscript">/chat-avatar https://example.com/my-avatar.png</code></pre>
+                </li>
+            </ul>
+        </div>`,
+    }));
+
+    // Register the user-avatar command
+    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
+        name: 'user-avatar',
+        callback: async (_, arg) => {
+            try {
+                console.log('SillyAssets: /user-avatar command triggered');
+                if (!arg) {
+                    const existing = getLocalVariable('sma-user-avatar');
+                    if (!existing) {
+                        toastr.info('SillyAssets: No temporary user avatar set for the current chat.');
+                        return '';
+                    }
+                    toastr.info(`SillyAssets: Current temporary user avatar: ${existing}`);
+                    const existingStr = existing.toString();
+                    if (existingStr.startsWith('data:')) {
+                        return existingStr;
+                    }
+                    
+                    // @ts-ignore
+                    return getContext().substituteParams(existingStr);
+                }
+
+                console.log('SillyAssets: /user-avatar applying new temporary user avatar.');
+                const rawUrl = String(arg);
+                applyUserAvatar(rawUrl);
+                toastr.success('SillyAssets: Temporary user avatar applied.');
+                if (rawUrl.startsWith('data:')) {
+                    return rawUrl;
+                }
+                
+                // @ts-ignore
+                return getContext().substituteParams(rawUrl);
+            } catch (error) {
+                toastr.error('SillyAssets: An unexpected error occurred.');
+                console.error('SillyAssets: /user-avatar unexpected error:', error);
+            }
+            return '';
+        },
+        returns: 'Current user avatar, if any.',
+        unnamedArgumentList: [
+            SlashCommandArgument.fromProps({
+                description: 'URL to image; local or remote.',
+                typeList: [ARGUMENT_TYPE.STRING],
+                isRequired: true,
+            }),
+        ],
+        helpString: `<div>
+            Temporarily changes the user's avatar in the current chat with provided image URL. Returns current temp user avatar if no argument is passed.
+        </div>
+        <div>
+            <strong>Example:</strong>
+            <ul>
+                <li>
+                    <pre><code class="language-stscript">/user-avatar https://example.com/user-avatar.png</code></pre>
                 </li>
             </ul>
         </div>`,
