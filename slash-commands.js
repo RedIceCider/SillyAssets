@@ -8,6 +8,12 @@ import { getLocalVariable } from '../../../variables.js';
 import { applyChatAvatar } from './chat_avatar.js';
 
 /**
+ * Get the SillyTavern context.
+ * @returns {any}
+ */
+const getContext = () => SillyTavern.getContext();
+
+/**
  * Registers all slash commands for the SillyAssets extension
  */
 export function registerSlashCommands() {
@@ -57,8 +63,9 @@ export function registerSlashCommands() {
                     if (existingStr.startsWith('data:')) {
                         return existingStr;
                     }
+                    
                     // @ts-ignore
-                    return SillyTavern.getContext().substituteParams(existingStr);
+                    return getContext().substituteParams(existingStr);
                 }
 
                 console.log('SillyAssets: /chat-avatar applying new temporary avatar.');
@@ -68,8 +75,9 @@ export function registerSlashCommands() {
                 if (rawUrl.startsWith('data:')) {
                     return rawUrl;
                 }
+                
                 // @ts-ignore
-                return SillyTavern.getContext().substituteParams(rawUrl);
+                return getContext().substituteParams(rawUrl);
             } catch (error) {
                 toastr.error('SillyAssets: An unexpected error occurred.');
                 console.error('SillyAssets: /chat-avatar unexpected error:', error);

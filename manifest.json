@@ -8,5 +8,8 @@
     "author": "RedIceCider",
     "version": "1.0.0",
     "homePage": "https://github.com/RedIceCider/SillyAssets",
-    "auto_update": true
+    "auto_update": true,
+    "hooks": {
+        "activate": "onActivate"
+    }
 }

@@ -1,56 +1,76 @@
-import { eventSource, event_types } from '../../../../script.js';
+/**
+ * Get the SillyTavern context.
+ * @returns {any}
+ */
+const getContext = () => SillyTavern.getContext();
 
-function replaceMacros(message) {
-    const ctx = SillyTavern.getContext();
-    if (!ctx.characterId) return;
+/**
+ * Resolves {{asset::}} macros in a string.
+ * 
+ * NOTE: This uses manual resolution instead of SillyTavern's global macro system.
+ * This is INTENTIONAL to keep assets "Visual Only". If registered as a global macro, 
+ * ST would expand it before building the AI prompt, causing massive prompt pollution 
+ * if the asset is a base64 string.
+ * 
+ * @param {string} text - The text containing macros
+ * @returns {string} The text with resolved asset URIs
+ */
+function resolveSillyAssetMacros(text) {
+    if (!text || typeof text !== 'string') return text;
+    
+    const ctx = getContext();
+    if (!ctx.characterId) return text;
 
     const assets = ctx.characters[ctx.characterId]?.data?.extensions?.silly_assets?.asset ?? [];
-    if (assets.length === 0) return;
+    if (assets.length === 0) return text;
 
     const macro_regex = /{{asset\s?::?([^}]+)}}/gi;
-
-    if (!macro_regex.test(message.innerHTML)) {
-        return;
-    }
-
-    const replacedHTML = message.innerHTML.replace(macro_regex, (match, assetName) => {
+    
+    return text.replace(macro_regex, (match, assetName) => {
         const trimmedAssetName = assetName.trim();
         const asset = assets.find(a => a.name === trimmedAssetName && a.type === 'custom');
 
         if (asset) {
             return asset.uri;
-        } else {
-            console.warn(`SillyAssets: Asset "${trimmedAssetName}" not found for macro.`);
-            return match;
         }
+        return match;
     });
+}
 
-    if (replacedHTML !== message.innerHTML) {
-        message.innerHTML = replacedHTML;
+/**
+ * Replaces macros in a rendered message element's HTML.
+ * This ensures the replacement is purely visual and doesn't affect the prompt.
+ */
+function replaceMacrosInElement(element) {
+    const originalHTML = element.innerHTML;
+    const replacedHTML = resolveSillyAssetMacros(originalHTML);
+
+    if (replacedHTML !== originalHTML) {
+        element.innerHTML = replacedHTML;
     }
 }
 
 function handleMacros(messageId = null) {
     if (messageId !== null && messageId !== undefined) {
         const message = document.querySelector(`#chat .mes[mesid="${messageId}"] .mes_text`);
-        if (message) replaceMacros(message);
+        if (message) replaceMacrosInElement(message);
     } else {
-        const messages = Array.from(document.querySelectorAll('.mes_text'));
-        for (const message of messages) {
-            replaceMacros(message);
-        }
+        const messages = document.querySelectorAll('.mes_text');
+        messages.forEach(replaceMacrosInElement);
     }
 }
 
-function onMessageRendered(messageId) {
-    handleMacros(messageId);
-}
-
 export function initializeSillyAssetsMacros() {
-    // Initial: process all
+    const { eventSource, event_types } = getContext();
+    
+    // Initial: process existing messages
     handleMacros();
-    eventSource.on(event_types.CHARACTER_MESSAGE_RENDERED, onMessageRendered);
-    eventSource.on(event_types.USER_MESSAGE_RENDERED, onMessageRendered);
+    
+    // Listen for new messages to apply visual-only replacement
+    eventSource.on(event_types.CHARACTER_MESSAGE_RENDERED, (id) => handleMacros(id));
+    eventSource.on(event_types.USER_MESSAGE_RENDERED, (id) => handleMacros(id));
     eventSource.on(event_types.CHAT_CHANGED, () => handleMacros());
-    eventSource.on(event_types.MESSAGE_UPDATED, onMessageRendered);
+    eventSource.on(event_types.MESSAGE_UPDATED, (id) => handleMacros(id));
+    
+    console.log('SillyAssets: Visual-only {{asset::}} macro handler initialized.');
 }

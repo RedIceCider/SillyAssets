@@ -67,12 +67,20 @@ function initSillyAssets() {
 function startSillyAssets() {
     initSillyAssets();
     initChatAvatar();
-    registerSlashCommands();
     maybeAutoApplyGreetingAvatar();
     initializeSillyAssetsMacros();
     getContext().eventSource.on(getContext().event_types.CHAT_CHANGED, maybeAutoApplyGreetingAvatar);
     console.log('SillyAssets: Ready.');
 }
 
+/**
+ * Lifecycle hook: activate
+ * Called when the extension is successfully activated during page load.
+ */
+export function onActivate() {
+    registerSlashCommands();
+}
+
+// Start the extension when the app is initialized (UI modifications)
 const { eventSource, event_types } = getContext();
 eventSource.on(event_types.APP_INITIALIZED, startSillyAssets);

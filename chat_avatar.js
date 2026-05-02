@@ -14,6 +14,8 @@ function getParsedAvatarUrl() {
     if (urlString.startsWith('data:')) {
         return urlString;
     }
+    
+    // Resolve standard ST macros
     // @ts-ignore
     return getContext().substituteParams(urlString);
 }
