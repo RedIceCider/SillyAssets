@@ -1,11 +1,17 @@
 // UI Components for SillyAssets Extension
 
 /**
+ * Get the SillyTavern context.
+ * @returns {any}
+ */
+const getContext = () => SillyTavern.getContext();
+
+/**
  * Renders the main asset manager UI
  * @returns {string} HTML string for the asset manager
  */
 export function renderAssetManagerUI() {
-    const ctx = SillyTavern.getContext();
+    const ctx = getContext();
     const { characterId, characters } = ctx;
     const char = characters[characterId];
     const altGreetings = char.data.alternate_greetings || [];
@@ -13,16 +19,16 @@ export function renderAssetManagerUI() {
 
     let html = `
         <style>
-        #silly-assets-wrapper {
+        #sa-wrapper {
             height: 70vh;
             overflow-y: auto;
             box-sizing: border-box;
         }
-        #silly-assets-wrapper input {
+        #sa-wrapper input {
             background-color: var(--SmartThemeChatTintColor);
             color: var(--SmartThemeBodyColor);
         }
-        .asset-block {
+        .sa-block {
             display: flex;
             align-items: flex-start;
             gap: 10px;
@@ -30,7 +36,10 @@ export function renderAssetManagerUI() {
             padding: 10px;
             flex-wrap: wrap;
         }
-        .asset-preview {
+        .sa-block--custom {
+            background-color: var(--SmartThemeBlurTintColor);
+        }
+        .sa-preview {
             width: 60px;
             height: 60px;
             border: 2px solid var(--SmartThemeEmColor);
@@ -43,24 +52,24 @@ export function renderAssetManagerUI() {
             color: var(--SmartThemeBodyColor);
             text-align: center;
         }
-        .asset-preview img {
+        .sa-preview img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             border-radius: 2px;
         }
-        .asset-main {
+        .sa-content {
             flex: 1;
             display: flex;
             flex-direction: column;
             gap: 8px;
             min-width: 0;
         }
-        .asset-name {
+        .sa-label {
             font-weight: bold;
             color: var(--SmartThemeBodyColor);
         }
-        .greeting-preview {
+        .sa-greeting-preview {
             padding: 6px;
             border-radius: 4px;
             color: var(--SmartThemeBodyColor);
@@ -74,39 +83,43 @@ export function renderAssetManagerUI() {
             width: 100%;
             line-height: 1.4;
         }
-        .asset-inputs {
+        .sa-input-group {
             display: flex;
             gap: 8px;
             align-items: center;
             flex-wrap: nowrap;
             width: 100%;
         }
-        .asset-url-input {
+        .sa-input-group--vertical {
+            flex-direction: column;
+        }
+        .sa-url-input, .sa-name-input {
             flex: 1;
             min-width: 0;
             padding: 6px;
             border: 1px solid var(--SmartThemeEmColor);
             border-radius: 4px;
+            width: 100%;
         }
-        .asset-file-input {
+        .sa-file-input {
             display: none;
         }
-        .sa-upload-btn, .sa-delete-asset-btn {
+        .sa-btn {
             flex-shrink: 0;
             white-space: nowrap;
         }
-        .sa-delete-asset-btn {
+        .sa-btn--delete {
             background: var(--crimson70a);
         }
-        .sa-delete-asset-btn:hover {
+        .sa-btn--delete:hover {
             background: var(--crimson-hover);
         }
-        .add-asset-section {
+        .sa-footer {
             margin-top: 15px;
             padding-top: 15px;
             text-align: center;
         }
-        .add-asset-btn {
+        .sa-add-btn {
             display: inline-flex;
             align-items: center;
             gap: 6px;
@@ -117,44 +130,29 @@ export function renderAssetManagerUI() {
             color: var(--SmartThemeBodyColor);
             cursor: pointer;
         }
-        .add-asset-btn:hover {
+        .sa-add-btn:hover {
             background-color: var(--SmartThemeChatTintColor);
         }
-        .custom-asset-block {
-            background-color: var(--SmartThemeBlurTintColor);
-        }
-        .custom-asset-inputs {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .custom-asset-name-input {
-            padding: 6px;
-            border: 1px solid var(--SmartThemeEmColor);
-            border-radius: 4px;
-        }
-        /* Button styles are now consolidated above */
         
-        /* Mobile-specific adjustments */
         @media (max-width: 768px) {
-            .asset-block {
+            .sa-block {
                 gap: 8px;
                 padding: 8px;
             }
-            .asset-preview {
+            .sa-preview {
                 width: 50px;
                 height: 50px;
             }
-            .greeting-preview {
+            .sa-greeting-preview {
                 height: 50px;
                 padding: 4px;
             }
-            .add-asset-btn {
+            .sa-add-btn {
                 padding: 6px 12px;
             }
         }
         </style>
-        <div id="silly-assets-wrapper">
+        <div id="sa-wrapper">
             <h3>Manage Assets</h3>
             
             <!-- Default Greeting Asset -->
@@ -166,11 +164,9 @@ export function renderAssetManagerUI() {
             <!-- Custom Assets -->
             ${assets.filter(a => a.type !== "alt-greeting").map(asset => renderCustomAssetBlock(asset)).join("")}
             
-            <hr>
-
             <!-- Add New Asset Section -->
-            <div class="add-asset-section">
-                <button class="add-asset-btn" id="add-custom-asset">
+            <div class="sa-footer">
+                <button class="sa-add-btn" id="sa-add-custom">
                     <i class="fa-solid fa-plus"></i>
                     Add Custom Asset
                 </button>
@@ -181,7 +177,7 @@ export function renderAssetManagerUI() {
 }
 
 /**
- * Parses macros in a URL for preview purposes
+ * Parses macros in a URL for preview purposes.
  * @param {string} url - The raw URL
  * @returns {string} The parsed URL
  */
@@ -189,7 +185,7 @@ function parsePreviewUrl(url) {
     if (!url || url.startsWith('data:')) return url;
     try {
         // @ts-ignore
-        return SillyTavern.getContext().substituteParams(url);
+        return getContext().substituteParams(url);
     } catch (e) {
         return url;
     }
@@ -209,17 +205,17 @@ export function renderGreetingAssetBlock(index, greetingText, asset) {
     const previewStyle = getPreviewStyle();
     
     return `
-        <div class="asset-block">
-            <div class="asset-preview" id="preview_${index}" style="${previewStyle}">
+        <div class="sa-block">
+            <div class="sa-preview" id="sa-preview-${index}" style="${previewStyle}">
                 ${previewSrc ? `<img src="${previewSrc}" alt="Asset preview">` : 'Preview'}
             </div>
-            <div class="asset-main">
-                <div class="asset-name">${assetName}</div>
-                <textarea class="greeting-preview" title="Greeting text preview" readonly rows="3">${(greetingText || 'No greeting text').trim()}</textarea>
-                <div class="asset-inputs">
-                    <input type="text" class="asset-url-input" id="asset_url_${index}" placeholder="https://example.com/image.png" value="${rawSrc}" />
-                    <input type="file" accept="image/*" class="asset-file-input" id="asset_file_${index}" />
-                    <button class="menu_button sa-upload-btn" data-target="asset_file_${index}">File</button>
+            <div class="sa-content">
+                <div class="sa-label">${assetName}</div>
+                <textarea class="sa-greeting-preview" title="Greeting text preview" readonly rows="3">${(greetingText || 'No greeting text').trim()}</textarea>
+                <div class="sa-input-group">
+                    <input type="text" class="sa-url-input" id="sa-url-${index}" placeholder="https://example.com/image.png" value="${rawSrc}" />
+                    <input type="file" accept="image/*" class="sa-file-input" id="sa-file-${index}" />
+                    <button class="menu_button sa-btn sa-upload-btn" data-target="sa-file-${index}">File</button>
                 </div>
             </div>
         </div>`;
@@ -237,19 +233,19 @@ export function renderCustomAssetBlock(asset) {
     const previewStyle = getPreviewStyle();
     
     return `
-        <div class="asset-block custom-asset-block">
-            <div class="asset-preview" id="preview_${assetId}" style="${previewStyle}">
+        <div class="sa-block sa-block--custom">
+            <div class="sa-preview" id="sa-preview-${assetId}" style="${previewStyle}">
                 ${previewSrc ? `<img src="${previewSrc}" alt="Asset preview">` : 'Preview'}
             </div>
-            <div class="asset-main">
-                <div class="asset-name">${asset.name}</div>
-                <div class="custom-asset-inputs">
-                    <input type="text" class="custom-asset-name-input" id="name_${assetId}" placeholder="Asset Name" value="${asset.name}" />
-                    <div class="asset-inputs">
-                        <input type="text" class="asset-url-input" id="asset_url_${assetId}" placeholder="https://example.com/image.png or select a file to upload" value="${rawSrc}" />
-                        <input type="file" accept="image/*" class="asset-file-input" id="asset_file_${assetId}" />
-                        <button class="menu_button sa-upload-btn" data-target="asset_file_${assetId}">File</button>
-                        <button class="menu_button sa-delete-asset-btn" data-asset-id="${assetId}">Delete</button>
+            <div class="sa-content">
+                <div class="sa-label">${asset.name}</div>
+                <div class="sa-input-group sa-input-group--vertical">
+                    <input type="text" class="sa-name-input" id="sa-name-${assetId}" placeholder="Asset Name" value="${asset.name}" />
+                    <div class="sa-input-group">
+                        <input type="text" class="sa-url-input" id="sa-url-${assetId}" placeholder="https://example.com/image.png or select a file to upload" value="${rawSrc}" />
+                        <input type="file" accept="image/*" class="sa-file-input" id="sa-file-${assetId}" />
+                        <button class="menu_button sa-btn sa-upload-btn" data-target="sa-file-${assetId}">File</button>
+                        <button class="menu_button sa-btn sa-btn--delete sa-delete-btn" data-asset-id="${assetId}">Delete</button>
                     </div>
                 </div>
             </div>
@@ -265,19 +261,19 @@ export function renderNewCustomAssetBlock(assetId) {
     const previewStyle = getPreviewStyle();
     
     return `
-        <div class="asset-block custom-asset-block">
-            <div class="asset-preview" id="preview_${assetId}" style="${previewStyle}">
+        <div class="sa-block sa-block--custom">
+            <div class="sa-preview" id="sa-preview-${assetId}" style="${previewStyle}">
                 Preview
             </div>
-            <div class="asset-main">
-                <div class="asset-name">New Asset</div>
-                <div class="custom-asset-inputs">
-                    <input type="text" class="custom-asset-name-input" id="name_${assetId}" placeholder="Asset Name" value="${Date.now()}" />
-                    <div class="asset-inputs">
-                        <input type="text" class="asset-url-input" id="asset_url_${assetId}" placeholder="https://example.com/image.png" value="" />
-                        <input type="file" accept="image/*" class="asset-file-input" id="asset_file_${assetId}" />
-                        <button class="menu_button sa-upload-btn" data-target="asset_file_${assetId}">File</button>
-                        <button class="menu_button sa-delete-asset-btn" data-asset-id="${assetId}">Delete</button>
+            <div class="sa-content">
+                <div class="sa-label">New Asset</div>
+                <div class="sa-input-group sa-input-group--vertical">
+                    <input type="text" class="sa-name-input" id="sa-name-${assetId}" placeholder="Asset Name" value="${Date.now()}" />
+                    <div class="sa-input-group">
+                        <input type="text" class="sa-url-input" id="sa-url-${assetId}" placeholder="https://example.com/image.png" value="" />
+                        <input type="file" accept="image/*" class="sa-file-input" id="sa-file-${assetId}" />
+                        <button class="menu_button sa-btn sa-upload-btn" data-target="sa-file-${assetId}">File</button>
+                        <button class="menu_button sa-btn sa-btn--delete sa-delete-btn" data-asset-id="${assetId}">Delete</button>
                     </div>
                 </div>
             </div>
@@ -289,7 +285,7 @@ export function renderNewCustomAssetBlock(assetId) {
  * @returns {string} CSS style string for the preview
  */
 function getPreviewStyle() {
-    const ctx = SillyTavern.getContext();
+    const ctx = getContext();
     const avatarStyle = ctx.powerUserSettings?.avatar_style || 0;
     
     switch (avatarStyle) {
@@ -304,4 +300,4 @@ function getPreviewStyle() {
         default:
             return 'border-radius: 4px;';
     }
-} 
+}

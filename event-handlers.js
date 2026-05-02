@@ -7,36 +7,33 @@ import { renderNewCustomAssetBlock } from './ui.js';
  * Sets up all event handlers for the asset manager popup
  */
 export function setupAssetManagerEventHandlers() {
-    const wrapper = document.getElementById('silly-assets-wrapper');
+    const wrapper = document.getElementById('sa-wrapper');
     console.log('SillyAssets: Setting up event handlers, wrapper found:', !!wrapper);
     if (!wrapper) {
-        console.error('SillyAssets: silly-assets-wrapper not found in DOM');
+        console.error('SillyAssets: sa-wrapper not found in DOM');
         return;
     }
-
-    console.log('SillyAssets: Wrapper element:', wrapper);
-    console.log('SillyAssets: Wrapper children:', wrapper.children.length);
 
     // Use event delegation to handle all events from the wrapper
     wrapper.addEventListener('click', async (e) => {
         const target = e.target;
-        console.log('SillyAssets: Click event on:', target);
+        if (!(target instanceof HTMLElement)) return;
 
         // Upload button handlers
-        if (target instanceof HTMLElement && target.classList.contains('sa-upload-btn')) {
+        if (target.classList.contains('sa-upload-btn')) {
             const targetId = target.dataset.target;
             const fileInput = document.getElementById(targetId);
             if (fileInput) fileInput.click();
         }
 
         // Delete custom asset buttons
-        if (target instanceof HTMLElement && target.classList.contains('sa-delete-asset-btn')) {
-            const assetBlock = target.closest('.asset-block');
+        if (target.classList.contains('sa-delete-btn')) {
+            const assetBlock = target.closest('.sa-block');
             if (assetBlock) assetBlock.remove();
         }
 
         // Add custom asset button
-        if (target instanceof HTMLElement && target.id === 'add-custom-asset') {
+        if (target.id === 'sa-add-custom') {
             console.log('SillyAssets: Add custom asset button clicked');
             addNewCustomAssetBlock();
         }
@@ -45,17 +42,17 @@ export function setupAssetManagerEventHandlers() {
     // File input change handlers using event delegation
     wrapper.addEventListener('change', async (e) => {
         const target = e.target;
-        console.log('SillyAssets: Change event on:', target);
+        if (!(target instanceof HTMLInputElement)) return;
 
-        if (target instanceof HTMLInputElement && target.classList.contains('asset-file-input')) {
+        if (target.classList.contains('sa-file-input')) {
             console.log('SillyAssets: File input changed');
             const files = target.files;
             if (files && files.length > 0) {
                 const file = files[0];
                 const dataUrl = await readFileAsDataURL(file);
-                const index = target.id.replace('asset_file_', '');
-                const urlInput = document.getElementById(`asset_url_${index}`);
-                const preview = document.getElementById(`preview_${index}`);
+                const index = target.id.replace('sa-file-', '');
+                const urlInput = document.getElementById(`sa-url-${index}`);
+                const preview = document.getElementById(`sa-preview-${index}`);
                 if (urlInput instanceof HTMLInputElement) urlInput.value = dataUrl;
                 if (preview) preview.innerHTML = `<img src="${dataUrl}" alt="Asset preview">`;
             }
@@ -65,12 +62,12 @@ export function setupAssetManagerEventHandlers() {
     // URL input change handlers for live preview using event delegation
     wrapper.addEventListener('input', (e) => {
         const target = e.target;
-        console.log('SillyAssets: Input event on:', target);
+        if (!(target instanceof HTMLInputElement)) return;
 
-        if (target instanceof HTMLInputElement && target.classList.contains('asset-url-input')) {
+        if (target.classList.contains('sa-url-input')) {
             console.log('SillyAssets: URL input changed');
-            const index = target.id.replace('asset_url_', '');
-            const preview = document.getElementById(`preview_${index}`);
+            const index = target.id.replace('sa-url-', '');
+            const preview = document.getElementById(`sa-preview-${index}`);
             const url = target.value ? target.value.trim() : '';
             if (preview) {
                 if (url) {
@@ -104,9 +101,8 @@ export function addNewCustomAssetBlock() {
 
     const newBlock = renderNewCustomAssetBlock(assetId);
 
-    const addSection = document.querySelector('.add-asset-section');
-    if (addSection) {
-        addSection.insertAdjacentHTML('beforebegin', newBlock);
-        // Event delegation handles new elements automatically, no need to re-setup handlers
+    const footer = document.querySelector('.sa-footer');
+    if (footer) {
+        footer.insertAdjacentHTML('beforebegin', newBlock);
     }
 }

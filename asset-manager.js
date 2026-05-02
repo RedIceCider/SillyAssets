@@ -22,7 +22,7 @@ export async function saveAllAssets() {
 
         // Save greeting assets
         for (let i = 0; i <= altGreetings.length; i++) {
-            const urlInput = document.getElementById(`asset_url_${i}`);
+            const urlInput = document.getElementById(`sa-url-${i}`);
             if (urlInput instanceof HTMLInputElement && urlInput.value.trim()) {
                 const uri = urlInput.value.trim();
                 const ext = getExtensionFromURI(uri);
@@ -37,9 +37,9 @@ export async function saveAllAssets() {
         }
 
         // Save custom assets
-        document.querySelectorAll(".custom-asset-block").forEach((block) => {
-            const nameInput = block.querySelector(".custom-asset-name-input");
-            const urlInput = block.querySelector(".asset-url-input");
+        document.querySelectorAll(".sa-block--custom").forEach((block) => {
+            const nameInput = block.querySelector(".sa-name-input");
+            const urlInput = block.querySelector(".sa-url-input");
 
             if (
                 nameInput instanceof HTMLInputElement &&
