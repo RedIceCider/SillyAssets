@@ -1,4 +1,5 @@
 import { getLocalVariable, setLocalVariable } from '../../../variables.js';
+import { resolveSillyAssetMacros } from './assets_macro.js';
 
 /**
  * Get the SillyTavern context.
@@ -36,13 +37,13 @@ function updateAvatarsInDom(selector, varName, messageId = null) {
 
     if (messageId !== null && messageId !== undefined) {
         const avatar = document.querySelector(`#chat .mes[mesid="${messageId}"]${selector} .avatar img`);
-        if (avatar && avatar instanceof HTMLImageElement) {
+        if (avatar && avatar instanceof HTMLImageElement && avatar.src !== src) {
             avatar.src = src;
         }
     } else {
         const avatars = document.querySelectorAll(`.mes${selector} .avatar img`);
         for (const avatar of avatars) {
-            if (avatar instanceof HTMLImageElement) {
+            if (avatar instanceof HTMLImageElement && avatar.src !== src) {
                 avatar.src = src;
             }
         }
@@ -67,7 +68,9 @@ function updateLastChatAvatars() {
         const avatars = document.querySelectorAll('.mes:not([is_user="true"]):not([is_system="true"]) .avatar img');
         if (avatars.length > 0) {
             const lastAvatar = avatars[avatars.length - 1];
-            if (lastAvatar instanceof HTMLImageElement) lastAvatar.src = charSrc;
+            if (lastAvatar instanceof HTMLImageElement && lastAvatar.src !== charSrc) {
+                lastAvatar.src = charSrc;
+            }
         }
     }
     // Update User
@@ -76,7 +79,9 @@ function updateLastChatAvatars() {
         const avatars = document.querySelectorAll('.mes[is_user="true"] .avatar img');
         if (avatars.length > 0) {
             const lastAvatar = avatars[avatars.length - 1];
-            if (lastAvatar instanceof HTMLImageElement) lastAvatar.src = userSrc;
+            if (lastAvatar instanceof HTMLImageElement && lastAvatar.src !== userSrc) {
+                lastAvatar.src = userSrc;
+            }
         }
     }
     console.log('SillyAssets: last chat avatars updated');
@@ -139,10 +144,12 @@ function fixZoomedAvatar() {
                     const currentSrc = imgElement.getAttribute('src');
                     
                     if (charUrl && currentSrc && (currentSrc.startsWith('/characters/http') || currentSrc.includes('default_avatar.png'))) {
+                         console.log('SillyAssets: Fixing zoomed character avatar src.');
                          imgElement.src = charUrl;
                          imgElement.setAttribute('data-izoomify-url', charUrl);
                     }
                     if (userUrl && currentSrc && currentSrc.includes('User%20Avatars')) {
+                         console.log('SillyAssets: Fixing zoomed user avatar src.');
                          imgElement.src = userUrl;
                          imgElement.setAttribute('data-izoomify-url', userUrl);
                     }
@@ -157,12 +164,14 @@ function fixZoomedAvatar() {
 
 export function applyChatAvatar(url) {
     if (!url) return;
+    console.log('SillyAssets: Applying new temporary character avatar.');
     setLocalVariable('sma-avatar', url);
     restoreAvatarListener();
 }
 
 export function applyUserAvatar(url) {
     if (!url) return;
+    console.log('SillyAssets: Applying new temporary user avatar.');
     setLocalVariable('sma-user-avatar', url);
     restoreAvatarListener();
 }
