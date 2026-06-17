@@ -1,11 +1,11 @@
 // Slash Commands for SillyAssets Extension
 
-import { SlashCommand } from '../../../slash-commands/SlashCommand.js';
-import { ARGUMENT_TYPE, SlashCommandArgument } from '../../../slash-commands/SlashCommandArgument.js';
-import { SlashCommandParser } from '../../../slash-commands/SlashCommandParser.js';
+import { SlashCommand } from '../../../../slash-commands/SlashCommand.js';
+import { ARGUMENT_TYPE, SlashCommandArgument } from '../../../../slash-commands/SlashCommandArgument.js';
+import { SlashCommandParser } from '../../../../slash-commands/SlashCommandParser.js';
 import { saveGreetingAsset, getExtensionFromURI } from './asset-manager.js';
-import { getLocalVariable } from '../../../variables.js';
-import { applyChatAvatar, applyUserAvatar } from './chat_avatar.js';
+import { getLocalVariable } from '../../../../variables.js';
+import { applyChatAvatar, applyUserAvatar } from './chat-avatar.js';
 
 /**
  * Get the SillyTavern context.

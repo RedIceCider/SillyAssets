@@ -1,6 +1,6 @@
 // Asset Manager functionality for SillyAssets Extension
 
-import { applyChatAvatar } from "./chat_avatar.js";
+import { applyChatAvatar } from "./chat-avatar.js";
 
 /**
  * Get the SillyTavern context.

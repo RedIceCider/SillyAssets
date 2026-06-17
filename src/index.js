@@ -1,4 +1,4 @@
-import { initChatAvatar } from './chat_avatar.js';
+import { initChatAvatar } from './chat-avatar.js';
 
 // Import UI components
 import { renderAssetManagerUI } from './ui.js';
@@ -11,7 +11,7 @@ import { setupAssetManagerEventHandlers } from './event-handlers.js';
 
 // Import slash commands
 import { registerSlashCommands } from './slash-commands.js';
-import { initializeSillyAssetsMacros } from './assets_macro.js';
+import { initializeSillyAssetsMacros } from './assets-macro.js';
 
 /**
  * Get the SillyTavern context.

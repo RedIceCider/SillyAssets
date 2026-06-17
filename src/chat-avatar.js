@@ -1,5 +1,5 @@
-import { getLocalVariable, setLocalVariable } from '../../../variables.js';
-import { resolveSillyAssetMacros } from './assets_macro.js';
+import { getLocalVariable, setLocalVariable } from '../../../../variables.js';
+import { resolveSillyAssetMacros } from './assets-macro.js';
 
 /**
  * Get the SillyTavern context.
