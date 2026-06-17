@@ -1,11 +1,5 @@
 // Slash Commands for SillyAssets Extension
 
-import { SlashCommand } from '../../../../slash-commands/SlashCommand.js';
-import {
-    ARGUMENT_TYPE,
-    SlashCommandArgument,
-} from '../../../../slash-commands/SlashCommandArgument.js';
-import { SlashCommandParser } from '../../../../slash-commands/SlashCommandParser.js';
 import { saveGreetingAsset, getExtensionFromURI } from './asset-manager.js';
 import { applyChatAvatar, applyUserAvatar } from './chat-avatar.js';
 
@@ -26,6 +20,8 @@ const getChatVar = (name) => getContext().chatMetadata?.variables?.[name];
  * Registers all slash commands for the SillyAssets extension
  */
 export function registerSlashCommands() {
+    const { SlashCommand, SlashCommandParser, SlashCommandArgument, ARGUMENT_TYPE } = getContext();
+
     // Register the sa-add-alt command
     SlashCommandParser.addCommandObject(
         SlashCommand.fromProps({
