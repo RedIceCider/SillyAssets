@@ -1,6 +1,6 @@
 // Asset Manager functionality for SillyAssets Extension
 
-import { applyChatAvatar } from './chat-avatar.js';
+import { applyChatAvatar, applyUserAvatar } from './chat-avatar.js';
 
 /**
  * Get the SillyTavern context.
@@ -19,6 +19,17 @@ export async function saveAllAssets() {
         const altGreetings = char.data.alternate_greetings || [];
 
         const allAssets = [];
+
+        // Save Temporary Avatars
+        const charTempInput = document.getElementById('sa-url-temp-character');
+        const userTempInput = document.getElementById('sa-url-temp-user');
+
+        if (charTempInput instanceof HTMLInputElement) {
+            applyChatAvatar(charTempInput.value.trim());
+        }
+        if (userTempInput instanceof HTMLInputElement) {
+            applyUserAvatar(userTempInput.value.trim());
+        }
 
         // Save greeting assets
         for (let i = 0; i <= altGreetings.length; i++) {

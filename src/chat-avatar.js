@@ -195,14 +195,28 @@ function fixZoomedAvatar() {
 }
 
 export function applyChatAvatar(url) {
-    if (!url) return;
+    if (!url) {
+        console.log('SillyAssets: Clearing temporary character avatar.');
+        const ctx = getContext();
+        if (ctx.chatMetadata?.variables) {
+            delete ctx.chatMetadata.variables['sma-avatar'];
+        }
+        return;
+    }
     console.log('SillyAssets: Applying new temporary character avatar.');
     setChatVar('sma-avatar', url);
     restoreAvatarListener();
 }
 
 export function applyUserAvatar(url) {
-    if (!url) return;
+    if (!url) {
+        console.log('SillyAssets: Clearing temporary user avatar.');
+        const ctx = getContext();
+        if (ctx.chatMetadata?.variables) {
+            delete ctx.chatMetadata.variables['sma-user-avatar'];
+        }
+        return;
+    }
     console.log('SillyAssets: Applying new temporary user avatar.');
     setChatVar('sma-user-avatar', url);
     restoreAvatarListener();

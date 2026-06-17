@@ -32,6 +32,17 @@ export function setupAssetManagerEventHandlers() {
             if (assetBlock) assetBlock.remove();
         }
 
+        // Clear temp avatar buttons
+        if (target.classList.contains('sa-clear-temp-btn')) {
+            const targetId = target.dataset.target;
+            const urlInput = document.getElementById(targetId);
+            // The preview id replaces sa-url- with sa-preview-
+            const previewId = targetId.replace('sa-url-', 'sa-preview-');
+            const preview = document.getElementById(previewId);
+            if (urlInput instanceof HTMLInputElement) urlInput.value = '';
+            if (preview) preview.innerHTML = 'None';
+        }
+
         // Clear greeting asset buttons
         if (target.classList.contains('sa-clear-greeting-btn')) {
             const index = target.dataset.index;

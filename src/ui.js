@@ -350,16 +350,20 @@ function getPreviewStyle() {
 export function renderTempAvatarBlock(type, rawSrc) {
     const previewSrc = parsePreviewUrl(rawSrc);
     const previewStyle = getPreviewStyle();
+    const idPrefix = type.toLowerCase(); // 'character' or 'user'
 
     return `
         <div class="sa-block sa-block--temp">
-            <div class="sa-preview" style="${previewStyle}">
+            <div class="sa-preview" id="sa-preview-temp-${idPrefix}" style="${previewStyle}">
                 ${previewSrc ? `<img src="${previewSrc}" alt="${type} preview">` : 'None'}
             </div>
             <div class="sa-content">
                 <div class="sa-label">${type} Avatar</div>
                 <div class="sa-input-group">
-                    <input type="text" class="sa-url-input" readonly value="${rawSrc}" placeholder="No temporary avatar set" />
+                    <input type="text" class="sa-url-input" id="sa-url-temp-${idPrefix}" value="${rawSrc}" placeholder="No temporary avatar set" />
+                    <input type="file" accept="image/*" class="sa-file-input" id="sa-file-temp-${idPrefix}" />
+                    <button class="menu_button sa-btn sa-upload-btn" data-target="sa-file-temp-${idPrefix}">File</button>
+                    <button class="menu_button sa-btn sa-btn--delete sa-clear-temp-btn" data-target="sa-url-temp-${idPrefix}">Clear</button>
                 </div>
             </div>
         </div>`;
