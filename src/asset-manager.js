@@ -1,6 +1,6 @@
 // Asset Manager functionality for SillyAssets Extension
 
-import { applyChatAvatar } from "./chat-avatar.js";
+import { applyChatAvatar } from './chat-avatar.js';
 
 /**
  * Get the SillyTavern context.
@@ -28,7 +28,7 @@ export async function saveAllAssets() {
                 const ext = getExtensionFromURI(uri);
 
                 allAssets.push({
-                    type: "alt-greeting",
+                    type: 'alt-greeting',
                     uri,
                     name: String(i),
                     ext,
@@ -37,9 +37,9 @@ export async function saveAllAssets() {
         }
 
         // Save custom assets
-        document.querySelectorAll(".sa-block--custom").forEach((block) => {
-            const nameInput = block.querySelector(".sa-name-input");
-            const urlInput = block.querySelector(".sa-url-input");
+        document.querySelectorAll('.sa-block--custom').forEach((block) => {
+            const nameInput = block.querySelector('.sa-name-input');
+            const urlInput = block.querySelector('.sa-url-input');
 
             if (
                 nameInput instanceof HTMLInputElement &&
@@ -52,7 +52,7 @@ export async function saveAllAssets() {
                 const ext = getExtensionFromURI(uri);
 
                 allAssets.push({
-                    type: "custom",
+                    type: 'custom',
                     uri,
                     name,
                     ext,
@@ -61,11 +61,9 @@ export async function saveAllAssets() {
         });
 
         // Write all assets at once
-        await writeExtensionField(characterId, "silly_assets", { asset: allAssets });
+        await writeExtensionField(characterId, 'silly_assets', { asset: allAssets });
 
-        toastr.success(
-            `SillyAssets: Saved ${allAssets.length} assets successfully.`,
-        );
+        toastr.success(`SillyAssets: Saved ${allAssets.length} assets successfully.`);
 
         // Apply greeting avatar if we're in a chat with greeting assets
         if (ctx.chat.length !== 1) {
@@ -75,8 +73,8 @@ export async function saveAllAssets() {
             }
         }
     } catch (err) {
-        console.error("SillyAssets: saveAllAssets error", err);
-        toastr.error("SillyAssets: Failed to save assets.");
+        console.error('SillyAssets: saveAllAssets error', err);
+        toastr.error('SillyAssets: Failed to save assets.');
     }
 }
 
@@ -86,14 +84,14 @@ export async function saveAllAssets() {
  * @param {string} uri - The asset URI
  * @param {string} ext - The file extension
  */
-export function saveGreetingAsset(index, uri, ext = "png") {
+export function saveGreetingAsset(index, uri, ext = 'png') {
     try {
         const ctx = getContext();
         const { characterId, characters, writeExtensionField } = ctx;
         const char = characters[characterId];
 
         const asset = {
-            type: "alt-greeting",
+            type: 'alt-greeting',
             uri,
             name: String(index),
             ext,
@@ -101,16 +99,16 @@ export function saveGreetingAsset(index, uri, ext = "png") {
 
         const existingAssets = char.data.extensions?.silly_assets?.asset || [];
         const updatedAssets = existingAssets.filter(
-            (a) => !(a.name === asset.name && a.type === asset.type),
+            (a) => !(a.name === asset.name && a.type === asset.type)
         );
         updatedAssets.push(asset);
 
-        writeExtensionField(characterId, "silly_assets", { asset: updatedAssets });
+        writeExtensionField(characterId, 'silly_assets', { asset: updatedAssets });
 
-        toastr.success("SillyAssets: Greeting asset saved.");
+        toastr.success('SillyAssets: Greeting asset saved.');
     } catch (err) {
-        console.error("SillyAssets: saveGreetingAsset error", err);
-        toastr.error("SillyAssets: Failed to save asset.");
+        console.error('SillyAssets: saveGreetingAsset error', err);
+        toastr.error('SillyAssets: Failed to save asset.');
     }
 }
 
@@ -121,11 +119,8 @@ export function saveGreetingAsset(index, uri, ext = "png") {
 export function applyGreetingAvatar(index) {
     const ctx = getContext();
     const { characterId, characters } = ctx;
-    const assets =
-        characters[characterId].data.extensions?.silly_assets?.asset || [];
-    const asset = assets.find(
-        (a) => a.name === String(index) && a.type === "alt-greeting",
-    );
+    const assets = characters[characterId].data.extensions?.silly_assets?.asset || [];
+    const asset = assets.find((a) => a.name === String(index) && a.type === 'alt-greeting');
 
     if (asset) {
         applyChatAvatar(asset.uri);
@@ -155,11 +150,10 @@ export function getCurrentGreetingIndex() {
  */
 export function getExtensionFromURI(uri) {
     try {
-        const match =
-            uri.match(/^data:image\/(.*?);/) || uri.match(/\.(\w{3,4})(\?|$)/);
-        return match ? match[1] : "png";
+        const match = uri.match(/^data:image\/(.*?);/) || uri.match(/\.(\w{3,4})(\?|$)/);
+        return match ? match[1] : 'png';
     } catch {
-        return "png";
+        return 'png';
     }
 }
 
@@ -173,10 +167,10 @@ export function readFileAsDataURL(file) {
         const reader = new FileReader();
         reader.onload = (e) => {
             const result = e.target.result;
-            if (typeof result === "string") {
+            if (typeof result === 'string') {
                 resolve(result);
             } else {
-                reject(new Error("SillyAssets: Failed to read file as data URL"));
+                reject(new Error('SillyAssets: Failed to read file as data URL'));
             }
         };
         reader.onerror = reject;
@@ -194,39 +188,24 @@ export function maybeAutoApplyGreetingAvatar() {
     const { eventSource, event_types } = ctx;
     if (ctx.chat.length !== 1) return;
 
-    const assets =
-        ctx.characters[ctx.characterId].data?.extensions?.silly_assets?.asset || [];
+    const assets = ctx.characters[ctx.characterId].data?.extensions?.silly_assets?.asset || [];
 
-    if (!assets.some((a) => a.type === "alt-greeting")) return;
+    if (!assets.some((a) => a.type === 'alt-greeting')) return;
 
     // Cleanup any previous handler before assigning a new one
     if (maybeAutoApplyGreetingAvatarHandler) {
-        eventSource.removeListener(
-            event_types.MESSAGE_SENT,
-            maybeAutoApplyGreetingAvatarHandler,
-        );
-        eventSource.removeListener(
-            event_types.CHAT_CHANGED,
-            cleanupGreetingAvatarHandler,
-        );
+        eventSource.removeListener(event_types.MESSAGE_SENT, maybeAutoApplyGreetingAvatarHandler);
+        eventSource.removeListener(event_types.CHAT_CHANGED, cleanupGreetingAvatarHandler);
     }
 
     maybeAutoApplyGreetingAvatarHandler = () => {
         const freshCtx = getContext();
         const swipeId = freshCtx.chat[0]?.swipe_id ?? 0;
-        const asset = assets.find(
-            (a) => a.name === String(swipeId) && a.type === "alt-greeting",
-        );
+        const asset = assets.find((a) => a.name === String(swipeId) && a.type === 'alt-greeting');
         if (asset) applyChatAvatar(asset.uri);
 
-        eventSource.removeListener(
-            event_types.MESSAGE_SENT,
-            maybeAutoApplyGreetingAvatarHandler,
-        );
-        eventSource.removeListener(
-            event_types.CHAT_CHANGED,
-            cleanupGreetingAvatarHandler,
-        );
+        eventSource.removeListener(event_types.MESSAGE_SENT, maybeAutoApplyGreetingAvatarHandler);
+        eventSource.removeListener(event_types.CHAT_CHANGED, cleanupGreetingAvatarHandler);
         maybeAutoApplyGreetingAvatarHandler = null;
     };
 
@@ -234,14 +213,11 @@ export function maybeAutoApplyGreetingAvatar() {
         if (maybeAutoApplyGreetingAvatarHandler) {
             eventSource.removeListener(
                 event_types.MESSAGE_SENT,
-                maybeAutoApplyGreetingAvatarHandler,
+                maybeAutoApplyGreetingAvatarHandler
             );
             maybeAutoApplyGreetingAvatarHandler = null;
         }
-        eventSource.removeListener(
-            event_types.CHAT_CHANGED,
-            cleanupGreetingAvatarHandler,
-        );
+        eventSource.removeListener(event_types.CHAT_CHANGED, cleanupGreetingAvatarHandler);
     }
 
     eventSource.on(event_types.MESSAGE_SENT, maybeAutoApplyGreetingAvatarHandler);

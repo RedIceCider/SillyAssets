@@ -1,0 +1,31 @@
+{
+    "name": "SillyAssets",
+    "version": "1.2.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "build": "webpack",
+        "lint": "eslint src/**/*.js",
+        "format": "prettier --write src/**/*.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devEngines": {
+        "packageManager": {
+            "name": "pnpm",
+            "version": "^11.6.0",
+            "onFail": "download"
+        }
+    },
+    "type": "module",
+    "devDependencies": {
+        "@eslint/js": "^10.0.1",
+        "eslint": "^10.5.0",
+        "globals": "^17.6.0",
+        "prettier": "^3.8.4",
+        "webpack": "^5.107.2",
+        "webpack-cli": "^7.0.3"
+    }
+}

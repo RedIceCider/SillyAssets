@@ -1,5 +1,4 @@
 import { getLocalVariable, setLocalVariable } from '../../../../variables.js';
-import { resolveSillyAssetMacros } from './assets-macro.js';
 
 /**
  * Get the SillyTavern context.
@@ -19,7 +18,7 @@ function getParsedAvatarUrl(varName) {
     if (urlString.startsWith('data:')) {
         return urlString;
     }
-    
+
     // Resolve standard ST macros
     // @ts-ignore
     return getContext().substituteParams(urlString);
@@ -36,7 +35,9 @@ function updateAvatarsInDom(selector, varName, messageId = null) {
     if (!src) return;
 
     if (messageId !== null && messageId !== undefined) {
-        const avatar = document.querySelector(`#chat .mes[mesid="${messageId}"]${selector} .avatar img`);
+        const avatar = document.querySelector(
+            `#chat .mes[mesid="${messageId}"]${selector} .avatar img`
+        );
         if (avatar && avatar instanceof HTMLImageElement && avatar.src !== src) {
             avatar.src = src;
         }
@@ -55,7 +56,7 @@ function updateChatAvatars(messageId = null) {
     updateAvatarsInDom(':not([is_user="true"]):not([is_system="true"])', 'sma-avatar', messageId);
     // Update User Avatars
     updateAvatarsInDom('[is_user="true"]', 'sma-user-avatar', messageId);
-    
+
     console.log('SillyAssets: chat avatars updated');
 }
 
@@ -65,7 +66,9 @@ function updateLastChatAvatars() {
     // Update Character
     const charSrc = getParsedAvatarUrl('sma-avatar');
     if (charSrc) {
-        const avatars = document.querySelectorAll('.mes:not([is_user="true"]):not([is_system="true"]) .avatar img');
+        const avatars = document.querySelectorAll(
+            '.mes:not([is_user="true"]):not([is_system="true"]) .avatar img'
+        );
         if (avatars.length > 0) {
             const lastAvatar = avatars[avatars.length - 1];
             if (lastAvatar instanceof HTMLImageElement && lastAvatar.src !== charSrc) {
@@ -95,7 +98,10 @@ function handleStreamTokenReceived() {
     allowStreamAvatarUpdate = false;
     const resetListener = () => {
         allowStreamAvatarUpdate = true;
-        getContext().eventSource.removeListener(getContext().event_types.CHARACTER_MESSAGE_RENDERED, resetListener);
+        getContext().eventSource.removeListener(
+            getContext().event_types.CHARACTER_MESSAGE_RENDERED,
+            resetListener
+        );
     };
     getContext().eventSource.on(getContext().event_types.CHARACTER_MESSAGE_RENDERED, resetListener);
 }
@@ -103,25 +109,25 @@ function handleStreamTokenReceived() {
 function restoreAvatarListener() {
     const charSrc = getLocalVariable('sma-avatar');
     const userSrc = getLocalVariable('sma-user-avatar');
-    
+
     if (charSrc || userSrc) {
         const { eventSource, event_types } = getContext();
         console.log('SillyAssets: Temporary avatars found, restoring listeners.');
-        
+
         // Clean up to prevent duplicates
         eventSource.removeListener(event_types.CHARACTER_MESSAGE_RENDERED, updateAvatars);
         eventSource.removeListener(event_types.USER_MESSAGE_RENDERED, updateAvatars);
         eventSource.removeListener(event_types.MESSAGE_UPDATED, updateAvatars);
         eventSource.removeListener(event_types.MESSAGE_SWIPED, updateAvatars);
         eventSource.removeListener(event_types.STREAM_TOKEN_RECEIVED, handleStreamTokenReceived);
-        
+
         // Register all rendering/update events
         eventSource.on(event_types.CHARACTER_MESSAGE_RENDERED, updateAvatars);
         eventSource.on(event_types.USER_MESSAGE_RENDERED, updateAvatars);
         eventSource.on(event_types.MESSAGE_UPDATED, updateAvatars);
         eventSource.on(event_types.MESSAGE_SWIPED, updateAvatars);
         eventSource.on(event_types.STREAM_TOKEN_RECEIVED, handleStreamTokenReceived);
-        
+
         updateChatAvatars();
     }
 }
@@ -135,23 +141,32 @@ function fixZoomedAvatar() {
         for (const mutation of mutations) {
             if (!mutation.addedNodes.length) continue;
             mutation.addedNodes.forEach((node) => {
-                if (node.nodeType === 1 && node instanceof Element && node.classList.contains('zoomed_avatar')) {
+                if (
+                    node.nodeType === 1 &&
+                    node instanceof Element &&
+                    node.classList.contains('zoomed_avatar')
+                ) {
                     const imgElement = node.querySelector('.zoomed_avatar_img');
                     if (!imgElement || !(imgElement instanceof HTMLImageElement)) return;
 
                     const charUrl = getParsedAvatarUrl('sma-avatar');
                     const userUrl = getParsedAvatarUrl('sma-user-avatar');
                     const currentSrc = imgElement.getAttribute('src');
-                    
-                    if (charUrl && currentSrc && (currentSrc.startsWith('/characters/http') || currentSrc.includes('default_avatar.png'))) {
-                         console.log('SillyAssets: Fixing zoomed character avatar src.');
-                         imgElement.src = charUrl;
-                         imgElement.setAttribute('data-izoomify-url', charUrl);
+
+                    if (
+                        charUrl &&
+                        currentSrc &&
+                        (currentSrc.startsWith('/characters/http') ||
+                            currentSrc.includes('default_avatar.png'))
+                    ) {
+                        console.log('SillyAssets: Fixing zoomed character avatar src.');
+                        imgElement.src = charUrl;
+                        imgElement.setAttribute('data-izoomify-url', charUrl);
                     }
                     if (userUrl && currentSrc && currentSrc.includes('User%20Avatars')) {
-                         console.log('SillyAssets: Fixing zoomed user avatar src.');
-                         imgElement.src = userUrl;
-                         imgElement.setAttribute('data-izoomify-url', userUrl);
+                        console.log('SillyAssets: Fixing zoomed user avatar src.');
+                        imgElement.src = userUrl;
+                        imgElement.setAttribute('data-izoomify-url', userUrl);
                     }
                 }
             });

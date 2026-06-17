@@ -133,7 +133,7 @@ export function renderAssetManagerUI() {
         .sa-add-btn:hover {
             background-color: var(--SmartThemeChatTintColor);
         }
-        
+
         @media (max-width: 768px) {
             .sa-block {
                 gap: 8px;
@@ -154,16 +154,31 @@ export function renderAssetManagerUI() {
         </style>
         <div id="sa-wrapper">
             <h3>Manage Assets</h3>
-            
+
             <!-- Default Greeting Asset -->
-            ${renderGreetingAssetBlock(0, char.data.first_mes, assets.find(a => a.name === "0" && a.type === "alt-greeting"))}
-            
+            ${renderGreetingAssetBlock(
+                0,
+                char.data.first_mes,
+                assets.find((a) => a.name === '0' && a.type === 'alt-greeting')
+            )}
+
             <!-- Alternative Greeting Assets -->
-            ${altGreetings.map((greeting, i) => renderGreetingAssetBlock(i + 1, greeting, assets.find(a => a.name === String(i + 1) && a.type === "alt-greeting"))).join("")}
-            
+            ${altGreetings
+                .map((greeting, i) =>
+                    renderGreetingAssetBlock(
+                        i + 1,
+                        greeting,
+                        assets.find((a) => a.name === String(i + 1) && a.type === 'alt-greeting')
+                    )
+                )
+                .join('')}
+
             <!-- Custom Assets -->
-            ${assets.filter(a => a.type !== "alt-greeting").map(asset => renderCustomAssetBlock(asset)).join("")}
-            
+            ${assets
+                .filter((a) => a.type !== 'alt-greeting')
+                .map((asset) => renderCustomAssetBlock(asset))
+                .join('')}
+
             <!-- Add New Asset Section -->
             <div class="sa-footer">
                 <button class="sa-add-btn" id="sa-add-custom">
@@ -186,7 +201,7 @@ function parsePreviewUrl(url) {
     try {
         // @ts-ignore
         return getContext().substituteParams(url);
-    } catch (e) {
+    } catch (_e) {
         return url;
     }
 }
@@ -199,11 +214,11 @@ function parsePreviewUrl(url) {
  * @returns {string} HTML string for the greeting asset block
  */
 export function renderGreetingAssetBlock(index, greetingText, asset) {
-    const assetName = index === 0 ? "Default Greeting" : `Alt Greeting ${index}`;
-    const rawSrc = asset?.uri || "";
+    const assetName = index === 0 ? 'Default Greeting' : `Alt Greeting ${index}`;
+    const rawSrc = asset?.uri || '';
     const previewSrc = parsePreviewUrl(rawSrc);
     const previewStyle = getPreviewStyle();
-    
+
     return `
         <div class="sa-block">
             <div class="sa-preview" id="sa-preview-${index}" style="${previewStyle}">
@@ -228,11 +243,11 @@ export function renderGreetingAssetBlock(index, greetingText, asset) {
  * @returns {string} HTML string for the custom asset block
  */
 export function renderCustomAssetBlock(asset) {
-    const rawSrc = asset.uri || "";
+    const rawSrc = asset.uri || '';
     const previewSrc = parsePreviewUrl(rawSrc);
     const assetId = `custom_${asset.name}`;
     const previewStyle = getPreviewStyle();
-    
+
     return `
         <div class="sa-block sa-block--custom">
             <div class="sa-preview" id="sa-preview-${assetId}" style="${previewStyle}">
@@ -260,7 +275,7 @@ export function renderCustomAssetBlock(asset) {
  */
 export function renderNewCustomAssetBlock(assetId) {
     const previewStyle = getPreviewStyle();
-    
+
     return `
         <div class="sa-block sa-block--custom">
             <div class="sa-preview" id="sa-preview-${assetId}" style="${previewStyle}">
@@ -288,7 +303,7 @@ export function renderNewCustomAssetBlock(assetId) {
 function getPreviewStyle() {
     const ctx = getContext();
     const avatarStyle = ctx.powerUserSettings?.avatar_style || 0;
-    
+
     switch (avatarStyle) {
         case 0: // Circle
             return 'border-radius: 50%;';

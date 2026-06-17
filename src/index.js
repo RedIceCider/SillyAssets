@@ -1,15 +1,7 @@
 import { initChatAvatar } from './chat-avatar.js';
-
-// Import UI components
 import { renderAssetManagerUI } from './ui.js';
-
-// Import asset manager functionality
 import { saveAllAssets, maybeAutoApplyGreetingAvatar } from './asset-manager.js';
-
-// Import event handlers
 import { setupAssetManagerEventHandlers } from './event-handlers.js';
-
-// Import slash commands
 import { registerSlashCommands } from './slash-commands.js';
 import { initializeSillyAssetsMacros } from './assets-macro.js';
 
@@ -30,7 +22,7 @@ async function showAssetManagerPopup() {
         wide: true,
         okButton: 'Save',
         cancelButton: 'Cancel',
-        onOpen: (popup) => {
+        onOpen: (_popup) => {
             // Set up event handlers after popup is opened and content is rendered
             setTimeout(() => {
                 setupAssetManagerEventHandlers();
@@ -69,7 +61,10 @@ function startSillyAssets() {
     initChatAvatar();
     maybeAutoApplyGreetingAvatar();
     initializeSillyAssetsMacros();
-    getContext().eventSource.on(getContext().event_types.CHAT_CHANGED, maybeAutoApplyGreetingAvatar);
+    getContext().eventSource.on(
+        getContext().event_types.CHAT_CHANGED,
+        maybeAutoApplyGreetingAvatar
+    );
     console.log('SillyAssets: Ready.');
 }
 
