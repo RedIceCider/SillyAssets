@@ -7,7 +7,6 @@ import {
 } from '../../../../slash-commands/SlashCommandArgument.js';
 import { SlashCommandParser } from '../../../../slash-commands/SlashCommandParser.js';
 import { saveGreetingAsset, getExtensionFromURI } from './asset-manager.js';
-import { getLocalVariable } from '../../../../variables.js';
 import { applyChatAvatar, applyUserAvatar } from './chat-avatar.js';
 
 /**
@@ -15,6 +14,13 @@ import { applyChatAvatar, applyUserAvatar } from './chat-avatar.js';
  * @returns {any}
  */
 const getContext = () => SillyTavern.getContext();
+
+/**
+ * Gets a chat-specific variable.
+ * @param {string} name - Variable name
+ * @returns {any}
+ */
+const getChatVar = (name) => getContext().chatMetadata?.variables?.[name];
 
 /**
  * Registers all slash commands for the SillyAssets extension
@@ -67,7 +73,7 @@ export function registerSlashCommands() {
                 try {
                     console.log('SillyAssets: /chat-avatar command triggered');
                     if (!arg) {
-                        const existing = getLocalVariable('sma-avatar');
+                        const existing = getChatVar('sma-avatar');
                         if (!existing) {
                             toastr.info(
                                 'SillyAssets: No temporary avatar set for the current chat.'
@@ -130,7 +136,7 @@ export function registerSlashCommands() {
                 try {
                     console.log('SillyAssets: /user-avatar command triggered');
                     if (!arg) {
-                        const existing = getLocalVariable('sma-user-avatar');
+                        const existing = getChatVar('sma-user-avatar');
                         if (!existing) {
                             toastr.info(
                                 'SillyAssets: No temporary user avatar set for the current chat.'

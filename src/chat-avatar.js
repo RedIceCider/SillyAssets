@@ -1,5 +1,3 @@
-import { getLocalVariable, setLocalVariable } from '../../../../variables.js';
-
 /**
  * Get the SillyTavern context.
  * @returns {any}
@@ -7,12 +5,31 @@ import { getLocalVariable, setLocalVariable } from '../../../../variables.js';
 const getContext = () => SillyTavern.getContext();
 
 /**
+ * Gets a chat-specific variable.
+ * @param {string} name - Variable name
+ * @returns {any}
+ */
+const getChatVar = (name) => getContext().chatMetadata?.variables?.[name];
+
+/**
+ * Sets a chat-specific variable.
+ * @param {string} name - Variable name
+ * @param {any} value - Value to set
+ */
+const setChatVar = (name, value) => {
+    const ctx = getContext();
+    if (!ctx.chatMetadata) ctx.chatMetadata = {};
+    if (!ctx.chatMetadata.variables) ctx.chatMetadata.variables = {};
+    ctx.chatMetadata.variables[name] = value;
+};
+
+/**
  * Gets the parsed avatar URL for a given variable.
  * @param {string} varName - The local variable name
  * @returns {string|null}
  */
 function getParsedAvatarUrl(varName) {
-    const rawUrl = getLocalVariable(varName);
+    const rawUrl = getChatVar(varName);
     if (!rawUrl) return null;
     const urlString = rawUrl.toString();
     if (urlString.startsWith('data:')) {
@@ -107,8 +124,8 @@ function handleStreamTokenReceived() {
 }
 
 function restoreAvatarListener() {
-    const charSrc = getLocalVariable('sma-avatar');
-    const userSrc = getLocalVariable('sma-user-avatar');
+    const charSrc = getChatVar('sma-avatar');
+    const userSrc = getChatVar('sma-user-avatar');
 
     if (charSrc || userSrc) {
         const { eventSource, event_types } = getContext();
@@ -180,14 +197,14 @@ function fixZoomedAvatar() {
 export function applyChatAvatar(url) {
     if (!url) return;
     console.log('SillyAssets: Applying new temporary character avatar.');
-    setLocalVariable('sma-avatar', url);
+    setChatVar('sma-avatar', url);
     restoreAvatarListener();
 }
 
 export function applyUserAvatar(url) {
     if (!url) return;
     console.log('SillyAssets: Applying new temporary user avatar.');
-    setLocalVariable('sma-user-avatar', url);
+    setChatVar('sma-user-avatar', url);
     restoreAvatarListener();
 }
 

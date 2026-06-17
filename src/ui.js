@@ -7,6 +7,13 @@
 const getContext = () => SillyTavern.getContext();
 
 /**
+ * Gets a chat-specific variable.
+ * @param {string} name - Variable name
+ * @returns {any}
+ */
+const getChatVar = (name) => getContext().chatMetadata?.variables?.[name];
+
+/**
  * Renders the main asset manager UI
  * @returns {string} HTML string for the asset manager
  */
@@ -16,6 +23,9 @@ export function renderAssetManagerUI() {
     const char = characters[characterId];
     const altGreetings = char.data.alternate_greetings || [];
     const assets = char.data.extensions?.silly_assets?.asset || [];
+
+    const charTempAvatar = getChatVar('sma-avatar') || '';
+    const userTempAvatar = getChatVar('sma-user-avatar') || '';
 
     let html = `
         <style>
@@ -39,6 +49,11 @@ export function renderAssetManagerUI() {
         .sa-block--custom {
             background-color: var(--SmartThemeBlurTintColor);
         }
+        .sa-block--temp {
+            background-color: var(--SmartThemeChatTintColor);
+            border: 1px solid var(--SmartThemeEmColor);
+            border-radius: 8px;
+        }
         .sa-preview {
             width: 60px;
             height: 60px;
@@ -56,7 +71,7 @@ export function renderAssetManagerUI() {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            border-radius: 2px;
+            border-radius: inherit;
         }
         .sa-content {
             flex: 1;
@@ -154,6 +169,14 @@ export function renderAssetManagerUI() {
         </style>
         <div id="sa-wrapper">
             <h3>Manage Assets</h3>
+
+            <div class="sa-temp-section">
+                <h4>Current Chat Avatars</h4>
+                ${renderTempAvatarBlock('Character', charTempAvatar)}
+                ${renderTempAvatarBlock('User', userTempAvatar)}
+            </div>
+
+            <hr/>
 
             <!-- Default Greeting Asset -->
             ${renderGreetingAssetBlock(
@@ -316,4 +339,28 @@ function getPreviewStyle() {
         default:
             return 'border-radius: 4px;';
     }
+}
+
+/**
+ * Renders a block for a temporary avatar
+ * @param {string} type - 'Character' or 'User'
+ * @param {string} rawSrc - The raw URL from the local variable
+ * @returns {string} HTML string for the temp avatar block
+ */
+export function renderTempAvatarBlock(type, rawSrc) {
+    const previewSrc = parsePreviewUrl(rawSrc);
+    const previewStyle = getPreviewStyle();
+
+    return `
+        <div class="sa-block sa-block--temp">
+            <div class="sa-preview" style="${previewStyle}">
+                ${previewSrc ? `<img src="${previewSrc}" alt="${type} preview">` : 'None'}
+            </div>
+            <div class="sa-content">
+                <div class="sa-label">${type} Avatar</div>
+                <div class="sa-input-group">
+                    <input type="text" class="sa-url-input" readonly value="${rawSrc}" placeholder="No temporary avatar set" />
+                </div>
+            </div>
+        </div>`;
 }
