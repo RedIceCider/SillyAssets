@@ -22,3 +22,21 @@ export const setChatVar = (name, value) => {
     if (!ctx.chatMetadata.variables) ctx.chatMetadata.variables = {};
     ctx.chatMetadata.variables[name] = value;
 };
+
+/**
+ * Debounces a function call.
+ * @param {Function} func - Function to debounce
+ * @param {number} wait - Wait time in milliseconds
+ * @returns {Function} Debounced function
+ */
+export const debounce = (func, wait) => {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+};

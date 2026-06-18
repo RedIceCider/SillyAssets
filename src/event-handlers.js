@@ -1,6 +1,6 @@
 // Event Handlers for SillyAssets Extension
 
-import { getContext } from './utils.js';
+import { getContext, debounce } from './utils.js';
 import { readFileAsDataURL } from './asset-manager.js';
 import { renderNewCustomAssetBlock } from './ui.js';
 
@@ -14,6 +14,31 @@ export function setupAssetManagerEventHandlers() {
         console.error('SillyAssets: sa-wrapper not found in DOM');
         return;
     }
+
+    const updatePreview = debounce((target) => {
+        if (!(target instanceof HTMLInputElement)) return;
+        console.log('SillyAssets: Updating preview for', target.id);
+        const index = target.id.replace('sa-url-', '');
+        const preview = document.getElementById(`sa-preview-${index}`);
+        const url = target.value ? target.value.trim() : '';
+        if (preview) {
+            if (url) {
+                let parsedUrl = url;
+                // Parse macros if not a data URL
+                if (!url.startsWith('data:')) {
+                    try {
+                        // @ts-ignore
+                        parsedUrl = getContext().substituteParams(url);
+                    } catch (e) {
+                        console.error('SillyAssets: Error parsing macros for preview', e);
+                    }
+                }
+                preview.innerHTML = `<img src="${parsedUrl}" alt="Asset preview" onerror="this.parentElement.innerHTML='Preview<br>Error'">`;
+            } else {
+                preview.innerHTML = 'Preview<br>of<br>Asset';
+            }
+        }
+    }, 500);
 
     // Use event delegation to handle all events from the wrapper
     wrapper.addEventListener('click', async (e) => {
@@ -83,30 +108,8 @@ export function setupAssetManagerEventHandlers() {
     // URL input change handlers for live preview using event delegation
     wrapper.addEventListener('input', (e) => {
         const target = e.target;
-        if (!(target instanceof HTMLInputElement)) return;
-
-        if (target.classList.contains('sa-url-input')) {
-            console.log('SillyAssets: URL input changed');
-            const index = target.id.replace('sa-url-', '');
-            const preview = document.getElementById(`sa-preview-${index}`);
-            const url = target.value ? target.value.trim() : '';
-            if (preview) {
-                if (url) {
-                    let parsedUrl = url;
-                    // Parse macros if not a data URL
-                    if (!url.startsWith('data:')) {
-                        try {
-                            // @ts-ignore
-                            parsedUrl = getContext().substituteParams(url);
-                        } catch (e) {
-                            console.error('SillyAssets: Error parsing macros for preview', e);
-                        }
-                    }
-                    preview.innerHTML = `<img src="${parsedUrl}" alt="Asset preview" onerror="this.parentElement.innerHTML='Preview<br>Error'">`;
-                } else {
-                    preview.innerHTML = 'Preview<br>of<br>Asset';
-                }
-            }
+        if (target instanceof HTMLInputElement && target.classList.contains('sa-url-input')) {
+            updatePreview(target);
         }
     });
 
