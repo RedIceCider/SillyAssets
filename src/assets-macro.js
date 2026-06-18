@@ -1,8 +1,4 @@
-/**
- * Get the SillyTavern context.
- * @returns {any}
- */
-const getContext = () => SillyTavern.getContext();
+import { getContext } from './utils.js';
 
 /**
  * Resolves {{asset::}} macros in a string.

@@ -1,17 +1,5 @@
 // UI Components for SillyAssets Extension
-
-/**
- * Get the SillyTavern context.
- * @returns {any}
- */
-const getContext = () => SillyTavern.getContext();
-
-/**
- * Gets a chat-specific variable.
- * @param {string} name - Variable name
- * @returns {any}
- */
-const getChatVar = (name) => getContext().chatMetadata?.variables?.[name];
+import { getContext, getChatVar } from './utils.js';
 
 /**
  * Renders the main asset manager UI

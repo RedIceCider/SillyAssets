@@ -1,15 +1,10 @@
+import { getContext } from './utils.js';
 import { initChatAvatar } from './chat-avatar.js';
 import { renderAssetManagerUI } from './ui.js';
 import { saveAllAssets, maybeAutoApplyGreetingAvatar } from './asset-manager.js';
 import { setupAssetManagerEventHandlers } from './event-handlers.js';
 import { registerSlashCommands } from './slash-commands.js';
 import { initializeSillyAssetsMacros } from './assets-macro.js';
-
-/**
- * Get the SillyTavern context.
- * @returns {any}
- */
-const getContext = () => SillyTavern.getContext();
 
 /**
  * Shows the asset manager popup

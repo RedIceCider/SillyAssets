@@ -3,21 +3,10 @@
 import { saveGreetingAsset, getExtensionFromURI } from './asset-manager.js';
 import { applyChatAvatar, applyUserAvatar } from './chat-avatar.js';
 
-/**
- * Get the SillyTavern context.
- * @returns {any}
- */
-const getContext = () => SillyTavern.getContext();
+import { getContext, getChatVar } from './utils.js';
 
 /**
- * Gets a chat-specific variable.
- * @param {string} name - Variable name
- * @returns {any}
- */
-const getChatVar = (name) => getContext().chatMetadata?.variables?.[name];
-
-/**
- * Registers all slash commands for the SillyAssets extension
+ * Registers slash commands for the SillyAssets extension
  */
 export function registerSlashCommands() {
     const { SlashCommand, SlashCommandParser, SlashCommandArgument, ARGUMENT_TYPE } = getContext();

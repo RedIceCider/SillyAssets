@@ -1,12 +1,7 @@
 // Asset Manager functionality for SillyAssets Extension
 
+import { getContext, getChatVar } from './utils.js';
 import { applyChatAvatar, applyUserAvatar } from './chat-avatar.js';
-
-/**
- * Get the SillyTavern context.
- * @returns {any}
- */
-const getContext = () => SillyTavern.getContext();
 
 /**
  * Saves all assets from the current popup
@@ -17,41 +12,38 @@ export async function saveAllAssets() {
         const { characterId, characters, writeExtensionField } = ctx;
         const char = characters[characterId];
         const altGreetings = char.data.alternate_greetings || [];
+        const existingAssets = char.data.extensions?.silly_assets?.asset || [];
 
         const allAssets = [];
 
-        // Save Temporary Avatars
+        // Track changes for smarter application
+        const oldCharTemp = (getChatVar('sma-avatar') || '').toString().trim();
+        const oldUserTemp = (getChatVar('sma-user-avatar') || '').toString().trim();
+
         const charTempInput = document.getElementById('sa-url-temp-character');
         const userTempInput = document.getElementById('sa-url-temp-user');
 
-        if (charTempInput instanceof HTMLInputElement) {
-            applyChatAvatar(charTempInput.value.trim());
-        }
-        if (userTempInput instanceof HTMLInputElement) {
-            applyUserAvatar(userTempInput.value.trim());
-        }
+        const newCharTemp =
+            charTempInput instanceof HTMLInputElement ? charTempInput.value.trim() : oldCharTemp;
+        const newUserTemp =
+            userTempInput instanceof HTMLInputElement ? userTempInput.value.trim() : oldUserTemp;
 
-        // Save greeting assets
+        const charTempChanged = oldCharTemp !== newCharTemp;
+        const userTempChanged = oldUserTemp !== newUserTemp;
+
+        // Collect greeting and custom assets
         for (let i = 0; i <= altGreetings.length; i++) {
             const urlInput = document.getElementById(`sa-url-${i}`);
             if (urlInput instanceof HTMLInputElement && urlInput.value.trim()) {
                 const uri = urlInput.value.trim();
                 const ext = getExtensionFromURI(uri);
-
-                allAssets.push({
-                    type: 'alt-greeting',
-                    uri,
-                    name: String(i),
-                    ext,
-                });
+                allAssets.push({ type: 'alt-greeting', uri, name: String(i), ext });
             }
         }
 
-        // Save custom assets
         document.querySelectorAll('.sa-block--custom').forEach((block) => {
             const nameInput = block.querySelector('.sa-name-input');
             const urlInput = block.querySelector('.sa-url-input');
-
             if (
                 nameInput instanceof HTMLInputElement &&
                 urlInput instanceof HTMLInputElement &&
@@ -61,27 +53,57 @@ export async function saveAllAssets() {
                 const name = nameInput.value.trim();
                 const uri = urlInput.value.trim();
                 const ext = getExtensionFromURI(uri);
-
-                allAssets.push({
-                    type: 'custom',
-                    uri,
-                    name,
-                    ext,
-                });
+                allAssets.push({ type: 'custom', uri, name, ext });
             }
         });
 
-        // Write all assets at once
-        await writeExtensionField(characterId, 'silly_assets', { asset: allAssets });
+        // Only write if assets list changed
+        const areAssetsEqual = (a, b) => {
+            if (a.length !== b.length) return false;
+            return a.every((item, i) => {
+                const other = b[i];
+                return (
+                    item.type === other.type && item.uri === other.uri && item.name === other.name
+                );
+            });
+        };
 
-        toastr.success(`SillyAssets: Saved ${allAssets.length} assets successfully.`);
+        const assetsChanged = !areAssetsEqual(allAssets, existingAssets);
+        if (assetsChanged) {
+            console.log('SillyAssets: Assets changed, saving to extension field.');
+            await writeExtensionField(characterId, 'silly_assets', { asset: allAssets });
+        }
 
-        // Apply greeting avatar if we're in a chat with greeting assets
-        if (ctx.chat.length !== 1) {
-            const currentGreetingIndex = getCurrentGreetingIndex();
-            if (currentGreetingIndex !== null) {
+        // Handle avatar updates
+        if (charTempChanged) {
+            applyChatAvatar(newCharTemp);
+        }
+        if (userTempChanged) {
+            applyUserAvatar(newUserTemp);
+        }
+
+        // Update current greeting avatar if it changed and no new temp override was set
+        const currentGreetingIndex = getCurrentGreetingIndex();
+        if (currentGreetingIndex !== null && !charTempChanged) {
+            const oldGreetingAsset =
+                existingAssets.find(
+                    (a) => a.name === String(currentGreetingIndex) && a.type === 'alt-greeting'
+                )?.uri || '';
+            const newGreetingAsset =
+                allAssets.find(
+                    (a) => a.name === String(currentGreetingIndex) && a.type === 'alt-greeting'
+                )?.uri || '';
+
+            if (oldGreetingAsset !== newGreetingAsset) {
+                console.log(
+                    `SillyAssets: Current greeting (${currentGreetingIndex}) asset changed, updating avatar.`
+                );
                 applyGreetingAvatar(currentGreetingIndex);
             }
+        }
+
+        if (assetsChanged || charTempChanged || userTempChanged) {
+            toastr.success('SillyAssets: Changes saved successfully.');
         }
     } catch (err) {
         console.error('SillyAssets: saveAllAssets error', err);

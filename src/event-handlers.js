@@ -1,5 +1,6 @@
 // Event Handlers for SillyAssets Extension
 
+import { getContext } from './utils.js';
 import { readFileAsDataURL } from './asset-manager.js';
 import { renderNewCustomAssetBlock } from './ui.js';
 
@@ -96,7 +97,7 @@ export function setupAssetManagerEventHandlers() {
                     if (!url.startsWith('data:')) {
                         try {
                             // @ts-ignore
-                            parsedUrl = SillyTavern.getContext().substituteParams(url);
+                            parsedUrl = getContext().substituteParams(url);
                         } catch (e) {
                             console.error('SillyAssets: Error parsing macros for preview', e);
                         }

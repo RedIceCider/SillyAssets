@@ -1,27 +1,4 @@
-/**
- * Get the SillyTavern context.
- * @returns {any}
- */
-const getContext = () => SillyTavern.getContext();
-
-/**
- * Gets a chat-specific variable.
- * @param {string} name - Variable name
- * @returns {any}
- */
-const getChatVar = (name) => getContext().chatMetadata?.variables?.[name];
-
-/**
- * Sets a chat-specific variable.
- * @param {string} name - Variable name
- * @param {any} value - Value to set
- */
-const setChatVar = (name, value) => {
-    const ctx = getContext();
-    if (!ctx.chatMetadata) ctx.chatMetadata = {};
-    if (!ctx.chatMetadata.variables) ctx.chatMetadata.variables = {};
-    ctx.chatMetadata.variables[name] = value;
-};
+import { getContext, getChatVar, setChatVar } from './utils.js';
 
 /**
  * Gets the parsed avatar URL for a given variable.
