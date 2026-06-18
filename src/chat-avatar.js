@@ -173,15 +173,26 @@ function fixZoomedAvatar() {
                     if (
                         charUrl &&
                         currentSrc &&
-                        (currentSrc.startsWith('/characters/http') ||
+                        (currentSrc.startsWith('/characters/') ||
                             currentSrc.includes('default_avatar.png'))
                     ) {
-                        console.log('SillyAssets: Fixing zoomed character avatar src.');
+                        console.log('SillyAssets: Fixing zoomed character avatar src.', {
+                            from: currentSrc,
+                            to: charUrl,
+                        });
                         imgElement.src = charUrl;
                         imgElement.setAttribute('data-izoomify-url', charUrl);
                     }
-                    if (userUrl && currentSrc && currentSrc.includes('User%20Avatars')) {
-                        console.log('SillyAssets: Fixing zoomed user avatar src.');
+                    if (
+                        userUrl &&
+                        currentSrc &&
+                        (currentSrc.includes('User%20Avatars') ||
+                            (!charUrl && currentSrc.includes('default_avatar.png')))
+                    ) {
+                        console.log('SillyAssets: Fixing zoomed user avatar src.', {
+                            from: currentSrc,
+                            to: userUrl,
+                        });
                         imgElement.src = userUrl;
                         imgElement.setAttribute('data-izoomify-url', userUrl);
                     }
